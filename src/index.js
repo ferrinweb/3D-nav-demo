@@ -32,8 +32,7 @@ renderer.antialias = true
 renderer.setPixelRatio(2)
 document.body.appendChild(renderer.domElement)
 
-const interaction = new Interaction(renderer, scene, camera)
-console.info(interaction)
+new Interaction(renderer, scene, camera)
 
 const rotationSpeed = 1
 let cX, cY
@@ -122,7 +121,6 @@ function addNavItems () {
     mbs[4] = new MeshBasicMaterial({ color: color, map: texture })
     const navItem = new Mesh(geometry, mbs)
     group.add(navItem)
-    console.info(navItem)
     return navItem
   }
   const items = [

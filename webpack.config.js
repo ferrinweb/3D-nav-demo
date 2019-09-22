@@ -8,6 +8,12 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 module.exports = {
   mode: 'production',
   entry: './src/index.js',
+  devServer: {
+    contentBase: path.resolve(__dirname, 'dist'),
+    compress: true,
+    port: 9000,
+    hot: true
+  },
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
