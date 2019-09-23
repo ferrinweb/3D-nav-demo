@@ -45,6 +45,7 @@ let rotationControlTimer
 let rotationControl = false
 let rotateStartPoint = new Vector3(0, 0, 1)
 let rotateEndPoint = new Vector3(0, 0, 1)
+let isMouseLeave = false
 let lastMoveTimestamp
 const moveReleaseTimeDelta = 50
 
@@ -263,13 +264,22 @@ function execRotation (e) {
   setCurrentPoint(e)
 }
 function endRotation (e) {
+  console.info(e)
+  if (e.type === 'mouseleave') {
+    isMouseLeave = true
+  }
   if (!rotationControl) return
   e.preventDefault()
-  if (lastMoveTimestamp && (new Date().getTime() - lastMoveTimestamp.getTime() > moveReleaseTimeDelta)) {
+  if (
+    !isMouseLeave &&
+    lastMoveTimestamp &&
+    (new Date().getTime() - lastMoveTimestamp.getTime() > moveReleaseTimeDelta)
+  ) {
     setCurrentDelta(e)
   }
   rotationControlTimer = setTimeout(() => {
     rotationControl = false
+    isMouseLeave = false
   }, 4000)
   renderer.domElement.removeEventListener('mousemove', execRotation)
   renderer.domElement.removeEventListener('mouseup', endRotation)
