@@ -20,6 +20,8 @@ import orbitRound from './js/handle-orbit-round'
 import addLight from './js/add-light'
 import getNavItemCameraFaced from './js/check-face'
 
+const android = window.android
+
 const scene = new Scene()
 const ratio = window.innerWidth / window.innerHeight
 const camera = new PerspectiveCamera(75, ratio, 0.1, 1000)
@@ -157,9 +159,9 @@ function setCurrentDelta (e) {
 function hightLightItem (item) {
   const mesh = item.object
   const itemScale = mesh.scale
-  itemScale.x = 1.5
-  itemScale.y = 1.5
-  itemScale.z = 1.5
+  itemScale.x = 2
+  itemScale.y = 2
+  itemScale.z = 2
   mesh.material.forEach(function (face) {
     if (face.emissive) {
       face.emissive.setHex(0xffffff)
@@ -197,6 +199,13 @@ function render () {
     } else {
       deltaY = 0
     }
+    if (deltaY === 0 && deltaX === 0) {
+      // 缓动停止后重启自动滚动
+      rotationControlTimer = setTimeout(() => {
+        rotationControl = false
+        isMouseLeave = false
+      }, 1000)
+    }
     handleRotation()
   }
 
@@ -206,7 +215,8 @@ function render () {
 function startPlay () {
   requestAnimationFrame(startPlay)
   if (group && !rotationControl) {
-    deltaX = 0.5
+    // 自动旋转速度
+    deltaX = 0.75
   }
   if (ball1) {
     moon1StartAngle += orbitRoundSpeed * 3
@@ -264,7 +274,6 @@ function execRotation (e) {
   setCurrentPoint(e)
 }
 function endRotation (e) {
-  console.info(e)
   if (e.type === 'mouseleave') {
     isMouseLeave = true
   }
@@ -277,10 +286,6 @@ function endRotation (e) {
   ) {
     setCurrentDelta(e)
   }
-  rotationControlTimer = setTimeout(() => {
-    rotationControl = false
-    isMouseLeave = false
-  }, 4000)
   renderer.domElement.removeEventListener('mousemove', execRotation)
   renderer.domElement.removeEventListener('mouseup', endRotation)
   renderer.domElement.removeEventListener('touchmove', execRotation)
@@ -298,19 +303,25 @@ function onWindowResize () {
 }
 
 function handleNavItemClick (item, index, e) {
+  setTimeout(function () {
+    rotationControl = false
+  })
   if (index === 0) {
-    location.href = 'https://baidu.com'
+    android && android.goTo && android.goTo('调用原生方法接口 Demo!')
     return
   }
   const itemScale = item.scale
   itemScale.x = 1.75
   itemScale.y = 1.75
-  itemScale.z = 1.75
+  itemScale.z = 2
   setTimeout(function () {
     itemScale.x = 1
     itemScale.y = 1
     itemScale.z = 1
   }, 100)
+  setTimeout(function () {
+    alert(`点击了第 ${index + 1} 个按钮!`)
+  }, 40)
 }
 
 function bindEvents () {
