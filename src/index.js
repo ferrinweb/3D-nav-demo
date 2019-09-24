@@ -19,6 +19,7 @@ import { projectOnTrackball, rotateMatrix } from './js/handle-rotation'
 import orbitRound from './js/handle-orbit-round'
 import addLight from './js/add-light'
 import getNavItemCameraFaced from './js/check-face'
+import easing from './js/easing'
 
 const android = window.android
 
@@ -159,9 +160,10 @@ function setCurrentDelta (e) {
 function hightLightItem (item) {
   const mesh = item.object
   const itemScale = mesh.scale
-  itemScale.x = 2
-  itemScale.y = 2
-  itemScale.z = 2
+  itemScale.x = easing(itemScale.x, 2, 1.08)
+  itemScale.y = easing(itemScale.y, 2, 1.08)
+  itemScale.z = easing(itemScale.z, 2, 1.08)
+  mesh.isHightLight = true
   mesh.material.forEach(function (face) {
     if (face.emissive) {
       face.emissive.setHex(0xffffff)
@@ -170,12 +172,13 @@ function hightLightItem (item) {
 }
 
 function resetNavItemsStatus () {
-  if (!currentNavItem) return
   navItems.forEach(function (item) {
+    if (!item.isHightLight) return
     const itemScale = item.scale
-    itemScale.x = 1
-    itemScale.y = 1
-    itemScale.z = 1
+    itemScale.x = easing(itemScale.x, 1, 0.92)
+    itemScale.y = easing(itemScale.y, 1, 0.92)
+    itemScale.z = easing(itemScale.z, 1, 0.92)
+    if (itemScale.x === 1) item.isHightLight = false
     item.material.forEach(function (face) {
       if (face.emissive) {
         face.emissive.setHex(item.initColor)
@@ -187,18 +190,8 @@ function resetNavItemsStatus () {
 
 function render () {
   if (group) {
-    const drag = 0.95
-    const minDelta = 0.05
-    if (deltaX < -minDelta || deltaX > minDelta) {
-      deltaX *= drag
-    } else {
-      deltaX = 0
-    }
-    if (deltaY < -minDelta || deltaY > minDelta) {
-      deltaY *= drag
-    } else {
-      deltaY = 0
-    }
+    deltaX = easing(deltaX, 0)
+    deltaY = easing(deltaY, 0)
     if (deltaY === 0 && deltaX === 0) {
       // 缓动停止后重启自动滚动
       rotationControlTimer = setTimeout(() => {
@@ -302,25 +295,34 @@ function onWindowResize () {
   renderer.setSize(screenWidth, screenHeight)
 }
 
+function itemZoom (itemScale, target, direction, rate) {
+  const zoom = (done) => {
+    itemScale.x = easing(itemScale.x, target, rate)
+    itemScale.y = easing(itemScale.y, target, rate)
+    itemScale.z = easing(itemScale.z, target, rate)
+    if ((direction === 1 && itemScale.x < target) || (direction === -1 && itemScale.x > target)) {
+      requestAnimationFrame(() => {
+        zoom(done)
+      })
+    } else {
+      done(itemScale)
+    }
+  }
+  return new Promise(resolve => {
+    zoom(resolve)
+  })
+}
+
 function handleNavItemClick (item, index, e) {
   setTimeout(function () {
     rotationControl = false
   })
-  if (index === 0) {
-    android && android.goTo && android.goTo('调用原生方法接口 Demo!')
-    return
-  }
   const itemScale = item.scale
-  itemScale.x = 1.75
-  itemScale.y = 1.75
-  itemScale.z = 2
+  itemZoom(itemScale, 1.75, 1, 1.1).then(itemScale => {
+    itemZoom(itemScale, 1, -1, 0.9)
+  })
   setTimeout(function () {
-    itemScale.x = 1
-    itemScale.y = 1
-    itemScale.z = 1
-  }, 100)
-  setTimeout(function () {
-    alert(`点击了第 ${index + 1} 个按钮!`)
+    android && android.goTo && android.goTo(index + 1)
   }, 40)
 }
 
