@@ -49,6 +49,7 @@ let rotationControl = false
 let rotateStartPoint = new Vector3(0, 0, 1)
 let rotateEndPoint = new Vector3(0, 0, 1)
 let isMouseLeave = false
+let controlReleased = false
 let lastMoveTimestamp
 const moveReleaseTimeDelta = 50
 
@@ -57,7 +58,6 @@ let ball1 = null
 let ball2 = null
 let ball3 = null
 const navItems = []
-let currentNavItem = null
 
 let navItemStartAngle = 0
 const startAngle = -15
@@ -185,31 +185,33 @@ function resetNavItemsStatus () {
       }
     })
   })
-  currentNavItem = null
 }
 
 function render () {
   if (group) {
-    deltaX = easing(deltaX, 0)
-    deltaY = easing(deltaY, 0)
-    if (deltaY === 0 && deltaX === 0) {
-      // 缓动停止后重启自动滚动
-      rotationControlTimer = setTimeout(() => {
-        rotationControl = false
-        isMouseLeave = false
-      }, 1000)
+    if (rotationControl) {
+      deltaX = easing(deltaX, 0)
+      deltaY = easing(deltaY, 0)
+      if (deltaY === 0 && deltaX === 0 && controlReleased) {
+        controlReleased = false
+        // 缓动停止后重启自动滚动
+        rotationControlTimer = setTimeout(() => {
+          rotationControl = false
+          isMouseLeave = false
+        }, 1000)
+      }
     }
-    handleRotation()
   }
-
+  handleRotation()
   renderer.render(scene, camera)
 }
 
 function startPlay () {
   requestAnimationFrame(startPlay)
-  if (group && !rotationControl) {
+  if (group && !rotationControl && !isMouseLeave) {
     // 自动旋转速度
-    deltaX = 0.75
+    deltaX = 1
+    deltaY = 0
   }
   if (ball1) {
     moon1StartAngle += orbitRoundSpeed * 3
@@ -231,7 +233,6 @@ function startPlay () {
   const currentItem = getNavItemCameraFaced(navItems, camera)
   if (currentItem) {
     hightLightItem(currentItem)
-    currentNavItem = currentItem
   } else {
     resetNavItemsStatus()
   }
@@ -250,6 +251,7 @@ function handleRotation () {
 
 function startRotation (e) {
   e.preventDefault()
+  controlReleased = false
   rotationControlTimer && clearTimeout(rotationControlTimer)
   renderer.domElement.addEventListener('mousemove', execRotation)
   renderer.domElement.addEventListener('mouseup', endRotation)
@@ -270,6 +272,7 @@ function endRotation (e) {
   if (e.type === 'mouseleave') {
     isMouseLeave = true
   }
+  controlReleased = true
   if (!rotationControl) return
   e.preventDefault()
   if (

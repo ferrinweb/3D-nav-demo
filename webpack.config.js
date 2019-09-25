@@ -12,6 +12,7 @@ module.exports = {
     contentBase: path.resolve(__dirname, 'dist'),
     compress: true,
     port: 9000,
+    host: '0.0.0.0',
     hot: true
   },
   plugins: [
