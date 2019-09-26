@@ -2,7 +2,9 @@ import {
   Scene,
   PerspectiveCamera,
   WebGLRenderer,
+  Vector2,
   Vector3,
+  Matrix4,
   Group,
   TextureLoader,
   BoxBufferGeometry,
@@ -43,6 +45,7 @@ let cX, cY
 let deltaX = 0
 let deltaY = 0
 
+// 鼠标或单指旋转
 let curQuaternion
 let rotationControlTimer
 let rotationControl = false
@@ -52,6 +55,12 @@ let isMouseLeave = false
 let controlReleased = false
 let lastMoveTimestamp
 const moveReleaseTimeDelta = 50
+
+// 双指旋转
+// 以水平线为 0 弧度
+let startFingers
+let currentFingers
+let deltaAngle = 0
 
 let earth = null
 let ball1 = null
@@ -82,6 +91,31 @@ loader.load('models/earth.gltf', function (gltf) {
   scale.z = 2
   group.add(earth)
 })
+
+function handle2FingerRotation (e) {
+  currentFingers = e.touches
+  const currentFingersLineAngle = getFingersRotationDirection(currentFingers)
+  const startFingersLineAngle = getFingersRotationDirection(startFingers || currentFingers)
+  const direction = currentFingersLineAngle - startFingersLineAngle
+  if (direction < 0) {
+    deltaAngle = direction > -0.2 ? direction : -0.2
+  } else {
+    deltaAngle = direction < 0.2 ? direction : 0.2
+  }
+  rotationByFinger(deltaAngle)
+  startFingers = currentFingers
+}
+
+function rotationByFinger (angle) {
+  group.rotateOnAxis(group.worldToLocal(camera.getWorldDirection()).normalize(), angle)
+}
+
+function getFingersRotationDirection (fingerPoints) {
+  const [{ pageX: x1, pageY: y1 }, { pageX: x2, pageY: y2 }] = fingerPoints
+  const x = x1 - x2
+  const y = y1 - y2
+  return y / x
+}
 
 function addDecorationBalls () {
   const geometry = new SphereGeometry(1, 36, 36)
@@ -192,7 +226,11 @@ function render () {
     if (rotationControl) {
       deltaX = easing(deltaX, 0)
       deltaY = easing(deltaY, 0)
-      if (deltaY === 0 && deltaX === 0 && controlReleased) {
+      if (deltaAngle) {
+        deltaAngle = easing(deltaAngle, 0, 0.96, 0.001)
+        rotationByFinger(deltaAngle)
+      }
+      if (deltaY === 0 && deltaX === 0 && deltaAngle && controlReleased) {
         controlReleased = false
         // 缓动停止后重启自动滚动
         rotationControlTimer = setTimeout(() => {
@@ -264,14 +302,19 @@ function startRotation (e) {
 function execRotation (e) {
   e.preventDefault()
   handleRotation()
-  setCurrentDelta(e)
-  lastMoveTimestamp = new Date()
-  setCurrentPoint(e)
+  if (!(e.type === 'touchmove' && e.touches.length > 1)) {
+    setCurrentDelta(e)
+    lastMoveTimestamp = new Date()
+    setCurrentPoint(e)
+  } else {
+    handle2FingerRotation(e)
+  }
 }
 function endRotation (e) {
   if (e.type === 'mouseleave') {
     isMouseLeave = true
   }
+  startFingers = null
   controlReleased = true
   if (!rotationControl) return
   e.preventDefault()
