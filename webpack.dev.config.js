@@ -7,7 +7,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portFinder = require('portfinder')
 
-const host = 'localhost'
+const host = '0.0.0.0'
 const port = 9000
 
 const createNotifierCallback = () => {
@@ -37,7 +37,6 @@ const devWebpackConfig = merge({
     compress: true,
     host,
     port,
-    open: true,
     publicPath: '/',
     quiet: true // necessary for FriendlyErrorsPlugin
   },
