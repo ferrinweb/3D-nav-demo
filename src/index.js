@@ -230,7 +230,7 @@ function render () {
         deltaAngle = easing(deltaAngle, 0, 0.96, 0.001)
         rotationByFinger(deltaAngle)
       }
-      if (deltaY === 0 && deltaX === 0 && deltaAngle && controlReleased) {
+      if (deltaY === 0 && deltaX === 0 && deltaAngle === 0 && controlReleased) {
         controlReleased = false
         // 缓动停止后重启自动滚动
         rotationControlTimer = setTimeout(() => {
