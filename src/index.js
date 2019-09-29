@@ -2,9 +2,7 @@ import {
   Scene,
   PerspectiveCamera,
   WebGLRenderer,
-  Vector2,
   Vector3,
-  Matrix4,
   Group,
   TextureLoader,
   BoxBufferGeometry,
@@ -22,6 +20,7 @@ import orbitRound from './js/handle-orbit-round'
 import addLight from './js/add-light'
 import getNavItemCameraFaced from './js/check-face'
 import easing from './js/easing'
+import itemZoom from './js/item-zoom'
 
 const android = window.android
 
@@ -339,24 +338,6 @@ function onWindowResize () {
   camera.updateProjectionMatrix()
 
   renderer.setSize(screenWidth, screenHeight)
-}
-
-function itemZoom (itemScale, target, direction, rate) {
-  const zoom = (done) => {
-    itemScale.x = easing(itemScale.x, target, rate)
-    itemScale.y = easing(itemScale.y, target, rate)
-    itemScale.z = easing(itemScale.z, target, rate)
-    if ((direction === 1 && itemScale.x < target) || (direction === -1 && itemScale.x > target)) {
-      requestAnimationFrame(() => {
-        zoom(done)
-      })
-    } else {
-      done(itemScale)
-    }
-  }
-  return new Promise(resolve => {
-    zoom(resolve)
-  })
 }
 
 function handleNavItemClick (item, index, e) {
