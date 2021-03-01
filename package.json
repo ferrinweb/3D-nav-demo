@@ -29,7 +29,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "three": "^0.108.0",
+    "three": "^0.125.0",
     "three.interaction": "^0.2.2"
   }
 }

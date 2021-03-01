@@ -4537,9 +4537,9 @@ three.interaction@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npm.taobao.org/three.interaction/download/three.interaction-0.2.2.tgz#01ce80ba7cacd24ada09dc57f1d64e9dd5d7a0b0"
 
-three@^0.108.0:
-  version "0.108.0"
-  resolved "https://registry.npm.taobao.org/three/download/three-0.108.0.tgz#53d26597c7932f214bb43f4655e566d2058143b5"
+three@^0.125.0:
+  version "0.125.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.125.0.tgz#19e922b9dc51ad0b706893aeee888de68e99850a"
 
 through2@^2.0.0:
   version "2.0.5"
